@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Home - Gebra Algebra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary-teal: #004d61; --dark-teal: #003847; --accent-gold: #e0a96d; --text-dark: #333; --bg-light: #f8f9fa; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); margin: 0; overflow-x: hidden; }
+
+        /* Navbar */
+        .navbar { background: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .nav-logo img { height: 70px; object-fit: contain; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { text-decoration: none; color: var(--text-dark); font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-teal); border-bottom: 2px solid var(--accent-gold); }
+        .btn-logout { text-decoration: none; border: 2px solid var(--primary-teal); color: var(--primary-teal); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; }
+        .btn-logout:hover { background-color: var(--primary-teal); color: white; }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-teal), var(--dark-teal));
+            color: white; 
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom-left-radius: 50px; border-bottom-right-radius: 50px;
+            padding: 30px 100px; min-height: 250px; position: relative;
+        }
+        .hero-text { max-width: 55%; text-align: left; z-index: 2; }
+        .hero h1 { font-size: 42px; margin-bottom: 8px; margin-top: 0; font-weight: 700; }
+        .hero p { font-size: 16px; opacity: 0.9; line-height: 1.5; margin-bottom: 0; }
+        .hero-image { max-width: 40%; display: flex; justify-content: center; position: relative; z-index: 2; }
+        .hero-image img { height: 200px; width: auto; filter: drop-shadow(0 8px 15px rgba(0,0,0,0.3)); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        /* News Section */
+        .news-container { max-width: 1000px; margin: -40px auto 50px auto; padding: 0 20px; position: relative; z-index: 5; }
+        .news-card { background: white; border-radius: 15px; padding: 20px 25px; margin-bottom: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); display: flex; align-items: flex-start; gap: 20px; transition: transform 0.2s; }
+        .news-card:hover { transform: translateX(5px); border-left: 5px solid var(--accent-gold); }
+        .news-icon { background: #eafaf1; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--primary-teal); }
+        .news-content h3 { margin: 0 0 5px 0; color: var(--primary-teal); font-size: 18px; }
+        .news-date { font-size: 11px; color: #999; margin-bottom: 8px; display: block; }
+        .news-content p { margin: 0; color: #555; line-height: 1.4; font-size: 14px; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 15px 20px; flex-direction: column; gap: 10px; }
+            .hero { flex-direction: column-reverse; padding: 30px 20px 50px 20px; text-align: center; min-height: auto; }
+            .hero-text { max-width: 100%; text-align: center; }
+            .hero-image { max-width: 100%; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">
+            <img src="{{ url_for('static', filename='algebraX_logo-removebg-preview.png') }}" alt="Gebra Logo">
+        </div>
+        <div class="nav-links">
+            <a href="/" class="active">Home</a>
+            <a href="/lessons">My Lessons</a>
+            <a href="/game">Game</a>
+            <a href="/my_progress">My Progress</a> <!-- MENU BARU -->
+        </div>
+        <a href="/logout" class="btn-logout">Logout</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-text">
+            <h1>Halo, {{ user_id }}!</h1>
+            <p>Selamat datang kembali. Siap untuk petualangan matematika hari ini? Simak update terbaru di bawah ini.</p>
+        </div>
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='Gemini_Generated_Image_iqt81piqt81piqt8-removebg-preview.png') }}" alt="Math Characters">
+        </div>
+    </div>
+
+    <div class="news-container">
+        {% for berita in berita_list %}
+        <div class="news-card">
+            <div class="news-icon"><i class="fas fa-bullhorn"></i></div>
+            <div class="news-content">
+                <h3>{{ berita.judul }}</h3>
+                <span class="news-date"><i class="far fa-calendar-alt"></i> {{ berita.tanggal }}</span>
+                <p>{{ berita.isi }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

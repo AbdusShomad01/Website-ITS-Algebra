@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Game Zone - Gebra Algebra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary-teal: #004d61; --dark-teal: #003847; --accent-gold: #e0a96d; --bg-light: #f8f9fa; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); margin: 0; }
+
+        /* Navbar */
+        .navbar { background: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-logo img { height: 60px; object-fit: contain; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-teal); border-bottom: 2px solid var(--accent-gold); }
+        .btn-logout { text-decoration: none; border: 2px solid var(--primary-teal); color: var(--primary-teal); padding: 8px 20px; border-radius: 50px; font-weight: 600; transition: 0.3s; }
+        .btn-logout:hover { background-color: var(--primary-teal); color: white; }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 50px auto; padding: 0 20px; }
+        .page-title { text-align: center; color: var(--primary-teal); font-size: 36px; margin-bottom: 10px; font-weight: 700; }
+        .page-subtitle { text-align: center; color: #666; margin-bottom: 50px; }
+
+        /* Grid Game */
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+
+        .game-card {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s; border: 1px solid #eee;
+            position: relative;
+        }
+        .game-card:hover { transform: translateY(-10px); }
+
+        .game-thumb {
+            height: 200px; background: linear-gradient(45deg, var(--primary-teal), var(--dark-teal));
+            display: flex; align-items: center; justify-content: center; color: white; font-size: 60px; position: relative;
+        }
+        
+        .game-info { padding: 25px; text-align: center; }
+        .game-title { font-size: 22px; font-weight: 700; color: var(--dark-teal); margin-bottom: 10px; }
+        .game-desc { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.5; min-height: 42px; }
+
+        .btn-play {
+            display: inline-block; background-color: var(--accent-gold); color: white;
+            padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 700;
+            transition: 0.3s; box-shadow: 0 5px 15px rgba(224, 169, 109, 0.4);
+        }
+        .btn-play:hover { transform: scale(1.05); background-color: #d49b5e; }
+
+        /* --- STYLE TERKUNCI (LOCKED) --- */
+        .locked .game-thumb { filter: grayscale(1); opacity: 0.8; }
+        .locked .btn-play { 
+            background-color: #ccc; 
+            cursor: not-allowed; 
+            box-shadow: none; 
+            pointer-events: none; /* Agar tidak bisa diklik */
+        }
+        
+        /* Badge On Going */
+        .badge-ongoing {
+            position: absolute; top: 15px; right: 15px; 
+            background: #e74c3c; /* Warna Merah */
+            color: white; padding: 5px 15px; border-radius: 20px; 
+            font-size: 12px; font-weight: 700;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo"><img src="{{ url_for('static', filename='algebraX_logo-removebg-preview.png') }}" alt="Logo"></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/lessons">My Lessons</a>
+            <a href="/game" class="active">Game</a>
+            <a href="/my_progress">My Progress</a>
+        </div>
+        <a href="/logout" class="btn-logout">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">Game Zone</h1>
+        <p class="page-subtitle">Pilih permainan untuk mengasah kemampuan Aljabarmu!</p>
+
+        <div class="game-grid">
+            
+            <!-- GAME 1: MATH RACER (TERBUKA) -->
+            <div class="game-card">
+                <div class="game-thumb"><i class="fas fa-car-side"></i></div>
+                <div class="game-info">
+                    <h3 class="game-title">Math Racer</h3>
+                    <p class="game-desc">Balapan mobil sambil menjawab soal aljabar. Hindari rintangan!</p>
+                    <a href="/play/math-racer" class="btn-play"><i class="fas fa-play"></i> Main Sekarang</a>
+                </div>
+            </div>
+
+            <!-- GAME 2: SPACE PUZZLE (TERKUNCI) -->
+            <div class="game-card locked">
+                <div class="game-thumb">
+                    <span class="badge-ongoing">ON GOING</span>
+                    <i class="fas fa-puzzle-piece"></i>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Space Puzzle</h3>
+                    <p class="game-desc">Susun pecahan logika matematika di luar angkasa.</p>
+                    <a href="#" class="btn-play">Segera Hadir</a>
+                </div>
+            </div>
+
+            <!-- GAME 3: GALACTIC MISSION (TERKUNCI) -->
+            <div class="game-card locked">
+                <div class="game-thumb">
+                    <span class="badge-ongoing">ON GOING</span>
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Galactic Mission</h3>
+                    <p class="game-desc">Misi rahasia antargalaksi sedang dalam pengembangan.</p>
+                    <a href="#" class="btn-play">Segera Hadir</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

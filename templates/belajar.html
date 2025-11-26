@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Belajar - Gebra Algebra</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font & Icon -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary-teal: #004d61; --dark-teal: #003847; --accent-gold: #e0a96d; --bg-light: #f8f9fa; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- PANEL KIRI: PDF VIEWER --- */
+        .pdf-panel {
+            width: 60%;
+            height: 100%;
+            background: #525659; /* Warna background standar PDF viewer */
+            border-right: 5px solid #e0e0e0;
+            position: relative;
+            overflow: auto; /* Agar bisa discroll saat di-zoom */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* Wrapper agar iframe bisa di-scale */
+        #pdf-wrapper {
+            width: 100%;
+            height: 100%;
+            transform-origin: top center; /* Zoom membesar dari tengah atas */
+            transition: transform 0.2s ease;
+        }
+
+        iframe { width: 100%; height: 100%; border: none; display: block; }
+
+        /* --- KONTROL ZOOM (FLOATING) --- */
+        .pdf-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-zoom {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+        .btn-zoom:hover { background: rgba(255,255,255,0.2); }
+        .zoom-level { color: white; font-weight: 600; font-size: 14px; min-width: 50px; text-align: center; }
+
+        /* --- PANEL KANAN: SOAL --- */
+        .quiz-panel {
+            width: 40%;
+            padding: 30px;
+            background: var(--bg-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-back {
+            text-decoration: none; color: #666; font-size: 14px; margin-bottom: 20px; display: inline-block; font-weight: 500;
+        }
+        .nav-back:hover { color: var(--primary-teal); }
+
+        h2 { color: var(--primary-teal); margin-top: 0; font-size: 24px; }
+        p.info { font-size: 14px; color: #666; margin-bottom: 20px; }
+
+        /* GATE */
+        .read-gate {
+            background: #fff3cd; border: 2px dashed #ffc107; padding: 20px;
+            border-radius: 10px; text-align: center; color: #856404;
+        }
+        .btn-unlock {
+            background: var(--accent-gold); color: white; border: none; padding: 10px 20px;
+            border-radius: 5px; font-weight: 600; cursor: pointer; margin-top: 10px;
+        }
+        .btn-unlock:hover { background: #d39e00; }
+
+        /* BOX SOAL */
+        .box-soal {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #eee;
+        }
+        .soal-text { font-size: 18px; font-weight: 500; margin-bottom: 20px; color: #333; }
+
+        input[type="text"] {
+            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;
+            font-size: 16px; box-sizing: border-box; margin-bottom: 15px;
+            font-family: 'Poppins', sans-serif;
+        }
+        input:focus { border-color: var(--primary-teal); outline: none; }
+
+        button.btn-submit {
+            width: 100%; padding: 12px; background: var(--primary-teal); color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;
+        }
+        button.btn-submit:hover { background: var(--dark-teal); }
+
+        /* FEEDBACK */
+        .feedback { padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .explanation-box {
+            margin-top: 15px; text-align: left; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANEL KIRI: PDF + ZOOM CONTROLS -->
+    <div class="pdf-panel">
+        
+        <!-- Tombol Zoom Melayang -->
+        <div class="pdf-controls">
+            <button class="btn-zoom" onclick="zoomOut()" title="Perkecil"><i class="fas fa-minus"></i></button>
+            <span class="zoom-level" id="zoom-text">100%</span>
+            <button class="btn-zoom" onclick="zoomIn()" title="Perbesar"><i class="fas fa-plus"></i></button>
+            <button class="btn-zoom" onclick="resetZoom()" title="Reset" style="margin-left:10px;"><i class="fas fa-compress"></i></button>
+        </div>
+
+        <!-- Wrapper untuk efek Scale -->
+        <div id="pdf-wrapper">
+            <!-- Menampilkan PDF -->
+            <iframe src="{{ url_for('static', filename=nama_pdf) }}#toolbar=0&view=FitH"></iframe>
+        </div>
+    </div>
+
+    <!-- PANEL KANAN: SOAL -->
+    <div class="quiz-panel">
+        <a href="/lessons" class="nav-back"><i class="fas fa-arrow-left"></i> Kembali ke My Lessons</a>
+        
+        <h2>Latihan Soal</h2>
+        <p class="info">Baca materi di samping, lalu kerjakan soal di bawah ini.</p>
+
+        {% if is_read == 0 %}
+            <div class="read-gate">
+                <h3>🔒 Materi Terkunci</h3>
+                <p>Silakan baca modul di sebelah kiri hingga selesai.</p>
+                <form method="POST" action="/mark_read/{{ materi_id }}">
+                    <label style="cursor:pointer;">
+                        <input type="checkbox" required> Saya sudah membaca & paham.
+                    </label>
+                    <br>
+                    <button type="submit" class="btn-unlock">Buka Soal Latihan</button>
+                </form>
+            </div>
+        {% else %}
+            
+            {% if pesan %}
+                <div class="feedback {{ 'success' if is_correct else 'error' }}">
+                    <h3>{{ pesan }}</h3>
+                    {% if not is_correct %}
+                        <div class="explanation-box">
+                            <strong>💡 Pembahasan:</strong><br>
+                            {{ explanation }}
+                        </div>
+                    {% endif %}
+                    <br>
+                    <a href="/belajar/{{ materi_id }}" style="text-decoration:none;">
+                        <button class="btn-submit">Lanjut Soal Berikutnya</button>
+                    </a>
+                </div>
+            {% else %}
+                <div class="box-soal">
+                    <div class="soal-text">{{ soal.text }}</div>
+                    <form method="POST">
+                        <input type="hidden" name="soal_id" value="{{ soal.id }}">
+                        <input type="text" name="jawaban" placeholder="Ketik jawaban Anda..." autocomplete="off" autofocus required>
+                        <button type="submit" class="btn-submit">Jawab</button>
+                    </form>
+                </div>
+            {% endif %}
+
+        {% endif %}
+    </div>
+
+    <!-- JAVASCRIPT UNTUK ZOOM -->
+    <script>
+        let currentScale = 1.0;
+        const pdfWrapper = document.getElementById('pdf-wrapper');
+        const zoomText = document.getElementById('zoom-text');
+
+        function updateZoom() {
+            // Batasi zoom minimal 0.5x dan maksimal 3x
+            if (currentScale < 0.5) currentScale = 0.5;
+            if (currentScale > 3.0) currentScale = 3.0;
+
+            // Terapkan transform scale
+            pdfWrapper.style.transform = `scale(${currentScale})`;
+            
+            // Update teks persen
+            zoomText.innerText = Math.round(currentScale * 100) + "%";
+
+            // Trik agar scrollbar muncul saat di-zoom in
+            // Kita ubah width/height wrapper agar container mendeteksi overflow
+            pdfWrapper.style.width = (100 * currentScale) + "%";
+            // Tinggi tidak perlu diubah paksa karena iframe akan ikut membesar
+        }
+
+        function zoomIn() {
+            currentScale += 0.2; // Tambah 20%
+            updateZoom();
+        }
+
+        function zoomOut() {
+            currentScale -= 0.2; // Kurang 20%
+            updateZoom();
+        }
+
+        function resetZoom() {
+            currentScale = 1.0;
+            pdfWrapper.style.transform = `scale(1)`;
+            pdfWrapper.style.width = "100%";
+            zoomText.innerText = "100%";
+        }
+    </script>
+
+</body>
+</html>

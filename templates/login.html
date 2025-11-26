@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Masuk - Gebra Algebra</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- 1. SETUP WARNA --- */
+        :root {
+            --primary-teal: #004d61;
+            --dark-teal: #003847;
+            --accent-gold: #e0a96d;
+            --bg-base: #f0f2f5;
+            --text-grey: #6b7280;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* --- 2. BACKGROUND LUAR --- */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-base);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* Dekorasi Luar */
+        body::before {
+            content: ""; position: absolute; top: -150px; right: -100px; width: 500px; height: 500px;
+            background-color: var(--primary-teal); border-radius: 50%; z-index: -1;
+        }
+        body::after {
+            content: ""; position: absolute; bottom: -200px; right: -150px; width: 600px; height: 600px;
+            border: 60px solid var(--primary-teal); border-radius: 50%; z-index: -1; opacity: 1;
+        }
+        .bg-dots {
+            position: absolute; bottom: 50px; right: 50px; width: 200px; height: 200px;
+            background-image: radial-gradient(#ccc 2px, transparent 2px); background-size: 20px 20px; z-index: -2;
+        }
+
+        /* --- 3. CONTAINER UTAMA --- */
+        .container {
+            background: white;
+            width: 90vw;
+            max-width: 1600px;
+            height: 85vh;
+            max-height: 850px; 
+            border-radius: 30px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.2);
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- 4. PANEL KIRI (BIRU) --- */
+        .left-panel {
+            width: 50%;
+            background: linear-gradient(135deg, var(--primary-teal), var(--dark-teal));
+            color: white;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dekorasi Panel Kiri */
+        .decor-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.08); }
+        .circle-1 { width: 300px; height: 300px; top: -50px; left: -50px; }
+        .circle-2 { width: 400px; height: 400px; bottom: -100px; right: -100px; border: 2px solid rgba(255,255,255,0.1); background: transparent; }
+        .circle-3 { width: 80px; height: 80px; bottom: 100px; left: 50px; background: var(--accent-gold); opacity: 0.9; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .dots-panel {
+            position: absolute; top: 50px; left: 50px; width: 150px; height: 150px;
+            background-image: radial-gradient(rgba(255,255,255,0.3) 2px, transparent 2px); background-size: 20px 20px;
+        }
+
+        .left-content { position: relative; z-index: 2; }
+        .left-content h1 { 
+            font-size: 3.5rem; 
+            line-height: 1.1; font-weight: 700; margin-bottom: 20px; 
+            text-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .left-content p { font-size: 1.2rem; opacity: 0.9; line-height: 1.6; max-width: 90%; }
+
+        /* --- 5. PANEL KANAN (FORM) --- */
+        .right-panel {
+            width: 50%;
+            background: white;
+            padding: 40px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Vertikal Center */
+            align-items: center;     /* Horizontal Center */
+            text-align: center;
+            overflow-y: auto; /* Aman buat layar pendek */
+        }
+
+        /* --- UPDATE: AREA LOGO GANDA --- */
+        .logo-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px; /* Jarak antar logo */
+            margin-bottom: 25px;
+        }
+
+        /* Class khusus agar kedua logo ukurannya sama */
+        .logo-img { 
+            height: 110px; /* Tinggi disamakan */
+            width: auto;   /* Lebar menyesuaikan proporsi */
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+        .logo-img:hover {
+            transform: scale(1.05); /* Efek zoom dikit pas di hover */
+        }
+        
+        .welcome-text { color: #333; margin-bottom: 30px; font-size: 1.8rem; font-weight: 600; }
+        
+        form { width: 100%; max-width: 500px; }
+
+        /* Input Styles */
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { font-size: 1rem; color: var(--text-grey); margin-bottom: 8px; font-weight: 500; display: block; }
+        .input-wrapper { position: relative; }
+        
+        input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid #eee;
+            background: #fdfdfd;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none; transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+        input:focus { border-color: var(--primary-teal); background: white; box-shadow: 0 0 0 4px rgba(0, 77, 97, 0.1); }
+        
+        .input-icon {
+            position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+            color: #ccc; font-size: 1.2rem; transition: 0.3s;
+        }
+        input:focus + .input-icon { color: var(--primary-teal); }
+
+        /* Options */
+        .form-options {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.9rem; color: var(--text-grey); margin-bottom: 25px;
+        }
+        .form-options a { color: var(--primary-teal); text-decoration: none; font-weight: 600; }
+        
+        /* Tombol Login */
+        .btn-primary {
+            width: 100%;
+            padding: 18px; 
+            background: var(--primary-teal);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(0, 77, 97, 0.25);
+        }
+        .btn-primary:hover { background: var(--dark-teal); transform: translateY(-3px); }
+
+        /* Social */
+        .divider { margin: 25px 0; font-size: 0.9rem; color: #ccc; position: relative; }
+        .divider::before, .divider::after {
+            content: ""; position: absolute; top: 50%; width: 40%; height: 1px; background: #eee;
+        }
+        .divider::before { left: 0; } .divider::after { right: 0; }
+
+        .social-icons { display: flex; justify-content: center; gap: 20px; }
+        .social-btn {
+            width: 50px; height: 50px; border-radius: 12px; border: 1px solid #eee;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.3s; color: #555; background: white; font-size: 24px;
+        }
+        .social-btn:hover { background: #f9f9f9; transform: scale(1.1); box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+
+        .create-account { margin-top: 30px; font-size: 1rem; color: var(--text-grey); }
+        .create-account span { color: var(--primary-teal); font-weight: 700; cursor: pointer; }
+
+        .error-msg { background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .container { width: 95vw; height: 90vh; flex-direction: row; }
+            .left-content h1 { font-size: 2.5rem; }
+        }
+        
+        @media (max-width: 900px) {
+            .container { flex-direction: column; overflow-y: auto; height: 95vh; }
+            .left-panel { display: none; }
+            .right-panel { width: 100%; height: auto; padding: 40px 20px; }
+            body::before, body::after, .bg-dots { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-dots"></div>
+
+    <div class="container">
+        
+        <div class="left-panel">
+            <div class="dots-panel"></div>
+            <div class="decor-circle circle-1"></div>
+            <div class="decor-circle circle-2"></div>
+            <div class="decor-circle circle-3"></div>
+            <div class="left-content">
+                <h1>KAPAN<br>LAGI?</h1>
+                <p>Bergabunglah dengan komunitas pembelajar cerdas dan kuasai Aljabar dengan cara yang menyenangkan.</p>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            
+            <div class="logo-area">
+                <img src="{{ url_for('static', filename='um_logo.png') }}" alt="Logo UM" class="logo-img">
+                
+                <img src="{{ url_for('static', filename='algebraX_logo-removebg-preview.png') }}" alt="Gebra Logo" class="logo-img">
+            </div>
+
+            <h2 class="welcome-text" id="page-title">Hello! Welcome back</h2>
+
+            {% if error %}
+                <div class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+                <div class="input-group">
+                    <label>Email Address / Username</label>
+                    <div class="input-wrapper">
+                        <input type="text" name="username" placeholder="Masukkan username" required>
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" name="password" placeholder="Masukkan password" required>
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" style="width: 20px; height: 20px; margin:0; accent-color: var(--primary-teal);"> 
+                        Remember me
+                    </label>
+                    <a href="#">Reset Password?</a>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btn-action">Login</button>
+
+                <div class="divider">or</div>
+
+                <div class="social-icons">
+                    <div class="social-btn"><i class="fab fa-google" style="color: #DB4437;"></i></div>
+                    <div class="social-btn"><i class="fab fa-facebook-f" style="color: #4267B2;"></i></div>
+                    <div class="social-btn"><i class="fab fa-apple" style="color: #000;"></i></div>
+                </div>
+
+                <div class="create-account">
+                    Dont have an account? <span onclick="toggleMode()">Create Account</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleMode() {
+            var title = document.getElementById("page-title");
+            var btn = document.getElementById("btn-action");
+            var form = document.querySelector("form");
+            var footerText = document.querySelector(".create-account");
+            var errorMsg = document.querySelector(".error-msg");
+
+            if (errorMsg) errorMsg.style.display = 'none';
+
+            if (btn.innerText === "Login") {
+                title.innerText = "Create Account";
+                btn.innerText = "Sign Up";
+                form.action = "/register";
+                footerText.innerHTML = 'Already have an account? <span onclick="toggleMode()">Login</span>';
+            } else {
+                title.innerText = "Hello! Welcome back";
+                btn.innerText = "Login";
+                form.action = "/login";
+                footerText.innerHTML = 'Dont have an account? <span onclick="toggleMode()">Create Account</span>';
+            }
+        }
+    </script>
+</body>
+</html>

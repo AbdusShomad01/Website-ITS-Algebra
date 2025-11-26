@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Math Racer - Gebra Algebra</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Poppins', sans-serif; background: #222; user-select: none; }
+
+        /* TOMBOL KEMBALI (KIRI ATAS) */
+        .btn-back {
+            position: absolute; top: 30px; left: 30px; z-index: 100;
+            background: #c0392b; color: white; padding: 10px 25px; border-radius: 50px;
+            text-decoration: none; font-weight: bold; border: 2px solid white;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .btn-back:hover { background: #e74c3c; transform: scale(1.05); }
+
+        /* SKOR (KANAN ATAS) */
+        .hud-score {
+            position: absolute; top: 30px; right: 30px; z-index: 100;
+            color: #e0a96d; font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: bold;
+            text-shadow: 2px 2px 0 #000; pointer-events: none;
+        }
+
+        /* --- SOAL (TENGAH ATAS) --- */
+        .hud-center {
+            position: absolute;
+            top: 25px; /* Geser ke paling atas sejajar tombol */
+            left: 50%; 
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+            width: auto;
+            white-space: nowrap;
+        }
+
+        .hud-question { 
+            font-size: 48px; 
+            color: #fff; 
+            font-weight: bold; 
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            background: rgba(0, 77, 97, 0.9); 
+            padding: 10px 40px; 
+            border-radius: 20px;
+            border: 3px solid #e0a96d;
+            display: inline-block;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* LAYAR GAME */
+        #game-container { position: relative; width: 100vw; height: 100vh; background: #333; }
+        canvas { display: block; margin: 0 auto; background: #444; border-left: 5px solid white; border-right: 5px solid white; }
+        
+        /* MODAL OVERLAY */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: white; z-index: 200;
+        }
+        .hidden { display: none !important; }
+
+        h1 { font-size: 64px; color: #e0a96d; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 3px; }
+        p { font-size: 24px; color: #ccc; margin-bottom: 40px; }
+
+        .btn-action {
+            background: #004d61; color: white; padding: 20px 60px; border: none;
+            font-size: 28px; border-radius: 50px; cursor: pointer; font-weight: bold;
+            border: 4px solid #e0a96d; transition: 0.2s;
+            box-shadow: 0 0 20px rgba(224, 169, 109, 0.4);
+        }
+        .btn-action:hover { background: #006d8a; transform: scale(1.1); }
+        
+        .controls-hint { margin-top: 40px; font-size: 16px; color: #888; }
+        .key-icon { border: 1px solid #aaa; padding: 5px 12px; border-radius: 5px; color: #fff; font-family: monospace; font-weight: bold; background: #333; }
+    </style>
+</head>
+<body>
+
+    <a href="/game" class="btn-back"><i class="fas fa-arrow-left"></i> Keluar</a>
+
+    <div id="game-container">
+        
+        <!-- Skor -->
+        <div class="hud-score">SCORE: <span id="score">0</span></div>
+        
+        <!-- Soal (Center Top) -->
+        <div class="hud-center">
+            <div class="hud-question" id="question-display">Siap?</div>
+            <!-- Tulisan instruksi dihapus sesuai request -->
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Layar Start -->
+        <div id="startScreen" class="overlay">
+            <h1>Math Racer</h1>
+            <p>Jawab soal aljabar secepat kilat!</p>
+            <button class="btn-action" onclick="startGame()">MULAI</button>
+            <div class="controls-hint">
+                Gunakan <span class="key-icon">←</span> dan <span class="key-icon">→</span> untuk menyetir
+            </div>
+        </div>
+
+        <!-- Layar Game Over -->
+        <div id="gameOverScreen" class="overlay hidden">
+            <h1 style="color: #c0392b;">GAME OVER</h1>
+            <p>Skor Akhir: <span id="finalScore" style="color:white; font-weight:bold;">0</span></p>
+            <button class="btn-action" onclick="location.reload()">MAIN LAGI</button>
+            <br>
+            <a href="/game" style="color:#ccc; text-decoration:underline; font-size:18px;">Kembali ke Menu</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Setup Layar
+        canvas.width = 600; 
+        canvas.height = window.innerHeight;
+
+        // Variabel Game
+        let isGameRunning = false;
+        let score = 0;
+        
+        // --- SETTING KECEPATAN (DIPELANKAN) ---
+        let speed = 2.5; // Awalnya 4, sekarang 2 (Lebih lambat)
+        
+        let lanes = [100, 300, 500]; 
+        
+        let car = { 
+            x: 300 - 30, 
+            y: canvas.height - 150, 
+            w: 60, h: 100, 
+            color: '#e0a96d',
+            currentLane: 1 
+        };
+        
+        let enemies = [];
+        let currentQuestion = {};
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            isGameRunning = true;
+            spawnEnemies();
+            loop();
+        }
+
+        function generateQuestion() {
+            const types = ['add', 'sub', 'mul'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let a, b, ans, text;
+
+            if (type === 'add') {
+                a = Math.floor(Math.random() * 20); b = Math.floor(Math.random() * 20); 
+                text = `x - ${a} = ${b}`; ans = a + b;
+            } else if (type === 'sub') {
+                a = Math.floor(Math.random() * 20) + 10; b = Math.floor(Math.random() * 10);      
+                text = `x + ${b} = ${a}`; ans = a - b;
+            } else {
+                a = Math.floor(Math.random() * 9) + 2; let x = Math.floor(Math.random() * 10) + 1; 
+                b = a * x; text = `${a}x = ${b}`; ans = x;
+            }
+            return { text: text + "  →  x = ?", ans: ans };
+        }
+
+        function spawnEnemies() {
+            currentQuestion = generateQuestion();
+            document.getElementById('question-display').innerText = currentQuestion.text;
+
+            let correctLane = Math.floor(Math.random() * 3);
+            let wrongAns1, wrongAns2;
+
+            do { wrongAns1 = currentQuestion.ans + Math.floor(Math.random() * 10) - 5; } 
+            while (wrongAns1 === currentQuestion.ans);
+
+            do { wrongAns2 = currentQuestion.ans + Math.floor(Math.random() * 10) - 5; } 
+            while (wrongAns2 === currentQuestion.ans || wrongAns2 === wrongAns1);
+
+            for (let i = 0; i < 3; i++) {
+                let val = (i === correctLane) ? currentQuestion.ans : (i === (correctLane + 1) % 3 ? wrongAns1 : wrongAns2);
+                enemies.push({
+                    x: lanes[i] - 40, y: -150, w: 80, h: 80,
+                    val: val, isCorrect: (i === correctLane)
+                });
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (!isGameRunning) return;
+            if (e.key === 'ArrowLeft') {
+                if (car.currentLane > 0) {
+                    car.currentLane--;
+                    car.x = lanes[car.currentLane] - (car.w / 2);
+                }
+            } else if (e.key === 'ArrowRight') {
+                if (car.currentLane < 2) {
+                    car.currentLane++;
+                    car.x = lanes[car.currentLane] - (car.w / 2);
+                }
+            }
+        });
+
+        function update() {
+            if (!isGameRunning) return;
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                e.y += speed;
+
+                if (
+                    car.x < e.x + e.w && car.x + car.w > e.x &&
+                    car.y < e.y + e.h && car.h + car.y > e.y
+                ) {
+                    if (e.isCorrect) {
+                        score += 10; 
+                        speed += 0.2; // Kenaikan kecepatan lebih pelan (tadinya 0.3)
+                        enemies = []; 
+                        document.getElementById('score').innerText = score;
+                        spawnEnemies(); 
+                        break; 
+                    } else {
+                        isGameRunning = false;
+                        document.getElementById('finalScore').innerText = score;
+                        document.getElementById('gameOverScreen').classList.remove('hidden');
+                    }
+                }
+                if (e.y > canvas.height) enemies.splice(i, 1);
+            }
+
+            if (enemies.length === 0 && isGameRunning) spawnEnemies();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#333'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = 'white'; ctx.setLineDash([40, 40]); ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.moveTo(200, 0); ctx.lineTo(200, canvas.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(400, 0); ctx.lineTo(400, canvas.height); ctx.stroke();
+
+            ctx.fillStyle = car.color; ctx.fillRect(car.x, car.y, car.w, car.h);
+            ctx.fillStyle = '#000'; ctx.fillRect(car.x + 5, car.y + 10, car.w - 10, 20); 
+
+            enemies.forEach(function(e) {
+                ctx.fillStyle = '#004d61'; 
+                ctx.strokeStyle = '#e0a96d'; ctx.lineWidth = 4;
+                ctx.fillRect(e.x, e.y, e.w, e.h);
+                ctx.strokeRect(e.x, e.y, e.w, e.h);
+                
+                ctx.fillStyle = 'white'; ctx.font = 'bold 36px Arial';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(e.val, e.x + (e.w / 2), e.y + (e.h / 2));
+            });
+        }
+
+        function loop() {
+            if (isGameRunning) {
+                update();
+                draw();
+                requestAnimationFrame(loop);
+            }
+        }
+
+        draw();
+    </script>
+</body>
+</html>

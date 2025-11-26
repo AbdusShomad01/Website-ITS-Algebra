@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Online Test - CAT Preparation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* SETUP WARNA */
+        :root {
+            --header-bg: #e0e0e0;
+            --btn-red: #c0392b;
+            --btn-blue: #007bff;
+            --btn-green: #28a745;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #fff;
+            margin: 0; padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .top-bar {
+            background: var(--header-bg); padding: 15px; text-align: center;
+            font-weight: 700; font-size: 18px; color: #444; border-bottom: 1px solid #ccc;
+        }
+
+        /* LAYOUT UTAMA */
+        .main-container { display: flex; flex: 1; height: calc(100vh - 55px); }
+
+        /* KIRI (SOAL) */
+        .left-panel {
+            width: 78%; display: flex; flex-direction: column; border-right: 2px solid #ccc;
+        }
+        .question-scroll-area { flex: 1; padding: 40px 50px; overflow-y: auto; }
+        
+        .question-header { 
+            font-size: 24px; font-weight: 700; 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 15px; margin-bottom: 20px; 
+            color: #2c3e50;
+        }
+        
+        .question-text { 
+            font-size: 24px; /* Diperbesar dari 22px */
+            margin-bottom: 35px; 
+            line-height: 1.6; 
+            color: #222; 
+        }
+
+        /* OPSI JAWABAN */
+        .option-item {
+            display: flex; align-items: center; margin-bottom: 20px; cursor: pointer;
+            padding: 15px; border-radius: 8px; transition: 0.2s; border: 1px solid transparent;
+        }
+        .option-item:hover { background-color: #f0f4f8; border-color: #dbe4ef; }
+        
+        .option-item input[type="radio"] { 
+            transform: scale(2.2); /* Diperbesar sedikit dari 2.0 */
+            margin-right: 25px; 
+            accent-color: var(--btn-green); 
+        }
+        
+        .option-item span { font-size: 22px; color: #444; } /* Diperbesar dari 20px */
+
+        /* FOOTER NAV */
+        .footer-nav {
+            background: #f1f1f1; padding: 20px 50px; border-top: 1px solid #ccc;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn {
+            border: none; 
+            padding: 15px 30px; /* Padding diperbesar */
+            border-radius: 30px; 
+            color: white;
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 18px; /* Font tombol diperbesar */
+            margin-right: 10px;
+        }
+        .btn-blue { background-color: var(--btn-blue); }
+        .btn-green { background-color: var(--btn-green); }
+
+        /* KANAN (SIDEBAR) */
+        .right-panel { width: 22%; background: #f9f9f9; display: flex; flex-direction: column; }
+        .timer-display { background: #fff; padding: 20px; text-align: center; border-bottom: 5px solid #e0e0e0; font-size: 28px; font-weight: bold; color: #555; }
+        .section-header { background: #e0e0e0; padding: 12px; text-align: center; font-weight: bold; margin-top: 10px; color: #444; font-size: 16px; }
+        
+        .palette-grid { padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        
+        /* KOTAK NOMOR */
+        .p-box {
+            height: 40px; display: flex; align-items: center; justify-content: center;
+            background: #fff; border: 1px solid #ccc; border-radius: 5px; border-top-right-radius: 12px;
+            font-weight: bold; font-size: 14px; cursor: pointer; color: #333;
+        }
+
+        /* WARNA STATUS */
+        .p-box.current { background-color: var(--btn-blue) !important; color: white; border-color: var(--btn-blue); }
+        .p-box.answered { background-color: var(--btn-green); color: white; border-color: var(--btn-green); }
+
+        /* LOGIC TAMPILAN */
+        .q-slide { display: none; }
+        .q-slide.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">Online Test - CAT Preparation</div>
+
+    <form id="quizForm" method="POST" action="/pretest" class="main-container">
+        
+        <!-- PANEL KIRI -->
+        <div class="left-panel">
+            <div class="question-scroll-area">
+                {% for soal in daftar_soal %}
+                
+                <!-- Simpan nomor soal ke variabel agar aman -->
+                {% set nomor_soal = loop.index0 %}
+                
+                <div class="q-slide {% if nomor_soal == 0 %}active{% endif %}" id="q-{{ nomor_soal }}">
+                    
+                    <div class="question-header">Question {{ loop.index }}</div>
+                    <div class="question-text">{{ soal.text | safe }}</div>
+
+                    <!-- Opsi Jawaban -->
+                    <div class="options-list">
+                        {% set labels = ['A', 'B', 'C', 'D', 'E', 'F'] %}
+                        {% for opsi in soal.options %}
+                        <label class="option-item">
+                            <input type="radio" 
+                                   class="radio-ans"
+                                   name="jawaban_{{ soal.id }}" 
+                                   value="{{ opsi }}"
+                                   data-q-index="{{ nomor_soal }}"> 
+                            
+                            <span>
+                                <b>
+                                {% if loop.index0 < labels|length %}
+                                    {{ labels[loop.index0] }}.
+                                {% else %}
+                                    {{ loop.index }}.
+                                {% endif %}
+                                </b> 
+                                &nbsp; {{ opsi | safe }}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="footer-nav">
+                <div></div> <!-- Spacer -->
+                <div>
+                    <button type="button" class="btn btn-blue" id="btn-prev" onclick="changeSlide(-1)">Previous</button>
+                    
+                    <!-- TOMBOL NEXT (Muncul di awal) -->
+                    <button type="button" class="btn btn-blue" id="btn-next" onclick="changeSlide(1)">Next</button>
+                    
+                    <!-- TOMBOL SUBMIT (Muncul hanya di akhir) -->
+                    <button type="submit" class="btn btn-green" id="btn-submit" style="display:none; margin-left:20px;">Submit Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL KANAN -->
+        <div class="right-panel">
+            <div style="text-align:center; padding:10px; background:#eee; font-weight:bold; color:#666;">Time Left</div>
+            <div class="timer-display" id="timer">30:00</div>
+
+            <div class="section-header">Answer Palette</div>
+            <div class="palette-grid">
+                {% for soal in daftar_soal %}
+                <div class="p-box {% if loop.index0 == 0 %}current{% endif %}" 
+                     id="pal-{{ loop.index0 }}"
+                     onclick="jumpTo({{ loop.index0 }})">
+                    {{ loop.index }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+
+    <script>
+        // PERBAIKAN: Menggunakan tanda kutip agar tidak error Syntax saat parsing
+        // "0" adalah default jika data kosong
+        let total = Number("{{ daftar_soal|length }}") || 0;
+        let currentIndex = 0;
+        
+        // --- Event Listener untuk Warna Jawaban ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const allRadios = document.querySelectorAll('.radio-ans');
+            allRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const qIndex = this.getAttribute('data-q-index');
+                    const paletteBox = document.getElementById('pal-' + qIndex);
+                    if(paletteBox) paletteBox.classList.add('answered');
+                });
+            });
+
+            // Atur tombol awal
+            updateButtons(0);
+        });
+
+        // --- Navigasi Slide ---
+        function showSlide(idx) {
+            // Sembunyikan semua soal
+            document.querySelectorAll('.q-slide').forEach(el => el.classList.remove('active'));
+            
+            // Tampilkan soal yang diminta
+            const targetSlide = document.getElementById('q-' + idx);
+            if(targetSlide) {
+                targetSlide.classList.add('active');
+                updateCurrentStatus(idx);
+                currentIndex = idx;
+                
+                // Update Tombol Next/Submit
+                updateButtons(idx);
+            }
+        }
+
+        // --- FUNGSI KONTROL TOMBOL (BARU) ---
+        function updateButtons(idx) {
+            const btnNext = document.getElementById('btn-next');
+            const btnSubmit = document.getElementById('btn-submit');
+            const btnPrev = document.getElementById('btn-prev'); // Tambahkan kontrol untuk previous
+
+            if (!btnNext || !btnSubmit || !btnPrev) return;
+
+            // Logic tombol Previous
+            if (idx === 0) {
+                btnPrev.style.display = 'none'; // Sembunyikan di soal pertama
+            } else {
+                btnPrev.style.display = 'inline-block';
+            }
+
+            // Jika ini soal terakhir (total - 1), tampilkan Submit
+            if (idx >= total - 1) {
+                btnNext.style.display = 'none';
+                btnSubmit.style.display = 'inline-block';
+            } else {
+                btnNext.style.display = 'inline-block';
+                btnSubmit.style.display = 'none';
+            }
+        }
+
+        function changeSlide(dir) {
+            let next = currentIndex + dir;
+            if(next >= 0 && next < total) showSlide(next);
+        }
+
+        function jumpTo(idx) { showSlide(idx); }
+
+        function updateCurrentStatus(idx) {
+            document.querySelectorAll('.p-box').forEach(el => el.classList.remove('current'));
+            const currBox = document.getElementById('pal-' + idx);
+            if(currBox) currBox.classList.add('current');
+        }
+
+        // --- Timer ---
+        let timeLimit = 30 * 60; 
+        const timerEl = document.getElementById('timer');
+        if(timerEl){
+            setInterval(() => {
+                let m = Math.floor(timeLimit / 60);
+                let s = timeLimit % 60;
+                timerEl.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                timeLimit--;
+                if(timeLimit < 0) document.getElementById('quizForm').submit();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
